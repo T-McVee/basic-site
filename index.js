@@ -7,13 +7,16 @@ dotenv.config();
 
 const port = process.env.PORT || 3000;
 
+// define server
 const server = http.createServer((req, res) => {
+  // set file path
   let filePath = path.join(
     __dirname,
     'public',
-    req.url === '/' ? 'index.html' : `${req.url}`
+    req.url === '/' ? 'index.html' : req.url
   );
 
+  // set content type
   let contentType = 'text/html';
 
   const writeRes = ({ res, code, type = {}, content }) => {
@@ -21,30 +24,32 @@ const server = http.createServer((req, res) => {
     res.end(content, 'utf8');
   };
 
+  // read file
   fs.readFile(filePath, (err, content) => {
     if (err) {
-      if (err.code === 'ENOENT') {
-        // 404 Page not found
+      if ((err.code = 'ENOENT')) {
+        // 404 Not found
         fs.readFile(
           path.join(__dirname, 'public', '404.html'),
           (err, content) => {
             writeRes({
               res,
-              code: 404,
-              type: { 'Content-Type': 'text/html' },
+              code: 200,
+              type: { 'Content-Type': contentType },
               content,
             });
           }
         );
       } else {
-        // Some server error
+        // server error
         writeRes({
           res,
           code: 500,
-          content: `Server Error: ${err.code}`,
+          content: `Server error: ${err.code}`,
         });
       }
     } else {
+      // valid request
       writeRes({
         res,
         code: 200,
@@ -55,6 +60,7 @@ const server = http.createServer((req, res) => {
   });
 });
 
+// Start server and set listen
 server.listen(port, () => {
-  console.log(`Server is running at port: ${port}`);
+  console.log(`The server is running on port: ${port}`);
 });
